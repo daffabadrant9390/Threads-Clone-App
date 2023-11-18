@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { UserData } from '@/types/userDataTypes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,8 @@ type AccountProfileProps = {
 };
 
 const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
+  const [imageFile, setImageFile] = useState<File[]>([]);
+
   const {
     image: userDataImage,
     name: userDataName,
@@ -49,12 +51,30 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
     console.log(values);
   };
 
-  const handleChangeProfileImage = (
-    e: ChangeEvent,
+  const handleUpdateProfileImage = (
+    e: ChangeEvent<HTMLInputElement>,
     fieldChange: (value: string) => void
   ) => {
+    // Prevent the browser to reload the page
     e.preventDefault();
-    console.log('Image Profile Changed!');
+
+    // Initialize the file reader
+    const fileReader = new FileReader();
+    const filesTargetEvent = e.target.files;
+
+    if (!!filesTargetEvent && !!filesTargetEvent.length) {
+      const firstFileTargetEvent = filesTargetEvent[0];
+      setImageFile(Array.from(filesTargetEvent));
+
+      if (!(firstFileTargetEvent.type || '').includes('image')) return;
+
+      fileReader.onload = async (event) => {
+        const imageDataUrl = event.target?.result?.toString() || '';
+        fieldChange(imageDataUrl);
+      };
+
+      fileReader.readAsDataURL(firstFileTargetEvent);
+    }
   };
 
   return (
@@ -69,7 +89,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
           name="profile_photo"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center gap-4">
-              <FormLabel className="account-form_image-label">
+              <FormLabel className="account-form_image-label relative">
                 {field.value ? (
                   <Image
                     src={field.value}
@@ -77,7 +97,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
                     width={96}
                     height={96}
                     priority
-                    className="rounded-full object-contain"
+                    className="rounded-full object-cover w-full h-full"
                   />
                 ) : (
                   <Image
@@ -96,7 +116,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
                   accept="image/*"
                   placeholder="Upload a photo"
                   className="account-form_image-input"
-                  onChange={(e) => handleChangeProfileImage(e, field.onChange)}
+                  onChange={(e) => handleUpdateProfileImage(e, field.onChange)}
                 />
               </FormControl>
             </FormItem>
@@ -124,7 +144,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
         {/* Username */}
         <FormField
           control={formData.control}
-          name="name"
+          name="username"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-3 w-full">
               <FormLabel className="text-base-semibold text-light-2">
@@ -143,7 +163,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
         {/* Bio */}
         <FormField
           control={formData.control}
-          name="name"
+          name="bio"
           render={({ field }) => (
             <FormItem className="flex flex-col gap-3 w-full">
               <FormLabel className="text-base-semibold text-light-2">
