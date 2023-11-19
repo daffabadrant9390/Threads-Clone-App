@@ -19,6 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
+import { isBase64Image } from '@/lib/utils';
+import { useUploadThing } from '@/lib/uploadthing';
 
 type AccountProfileProps = {
   userData: UserData;
@@ -27,6 +29,7 @@ type AccountProfileProps = {
 
 const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
   const [imageFile, setImageFile] = useState<File[]>([]);
+  const { startUpload } = useUploadThing('media');
 
   const {
     image: userDataImage,
@@ -45,10 +48,23 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof UserValidation>) => {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+    const blob = values.profile_photo;
+
+    // Check whether the image already changed or not
+    const hasImageChanged = isBase64Image(blob);
+
+    if (hasImageChanged) {
+      const imgRes = await startUpload(imageFile);
+      const firstImgResFileUrl = imgRes?.[0].url || '';
+
+      if (!!imgRes && !!firstImgResFileUrl) {
+        // Update the value of profile_photo with the new url from imgRes
+        values.profile_photo = firstImgResFileUrl;
+      }
+
+      //TODO: Update user profile (After complete Backend Part)
+    }
   };
 
   const handleUpdateProfileImage = (
