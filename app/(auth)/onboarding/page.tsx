@@ -1,4 +1,5 @@
 import AccountProfile from '@/components/forms/AccountProfile';
+import { getUserData } from '@/lib/actions/user.actions';
 import { UserData, UserInfo } from '@/types/userDataTypes';
 import { currentUser } from '@clerk/nextjs';
 
@@ -8,14 +9,23 @@ const Page = async () => {
     TODO: Can be updated later for the types after API integration (Currently using dummy types)  
   */
   const user = await currentUser();
-  const userInfo: Partial<UserInfo> = {};
+  // Get data from mongodb Database with the specific ID.
+  const userDataFromDB: Partial<UserInfo> = await getUserData(user?.id || '');
+
+  // const userInfo: Partial<UserInfo> = {};
+
+  /*
+    - For userData, grab the data from database and check if the user is found or not
+    - If the user found, set the userData with data which found inside the database
+    - If not found, set the userData from session login (clerk currentUser())
+  */
   const userData: UserData = {
     id: user?.id || '',
-    objectId: userInfo?._id || '',
-    username: userInfo?.username || user?.username || '',
-    name: userInfo?.name || user?.firstName || '',
-    bio: userInfo?.bio || '',
-    image: userInfo?.image || user?.imageUrl || '/',
+    objectId: userDataFromDB?._id || '',
+    username: userDataFromDB?.username || user?.username || '',
+    name: userDataFromDB?.name || user?.firstName || '',
+    bio: userDataFromDB?.bio || '',
+    image: userDataFromDB?.image || user?.imageUrl || '/',
   };
 
   return (

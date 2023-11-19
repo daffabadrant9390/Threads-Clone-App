@@ -21,6 +21,8 @@ import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { isBase64Image } from '@/lib/utils';
 import { useUploadThing } from '@/lib/uploadthing';
+import { getUserData, updateUserData } from '@/lib/actions/user.actions';
+import { useRouter, usePathname } from 'next/navigation';
 
 type AccountProfileProps = {
   userData: UserData;
@@ -30,6 +32,9 @@ type AccountProfileProps = {
 const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
   const [imageFile, setImageFile] = useState<File[]>([]);
   const { startUpload } = useUploadThing('media');
+
+  const router = useRouter();
+  const pathName = usePathname();
 
   const {
     image: userDataImage,
@@ -63,7 +68,20 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
         values.profile_photo = firstImgResFileUrl;
       }
 
-      //TODO: Update user profile (After complete Backend Part)
+      await updateUserData({
+        userId: userData.id,
+        name: values.name,
+        username: values.username,
+        bio: values.bio,
+        image: values.profile_photo,
+        urlPath: pathName,
+      });
+
+      if (pathName === 'profile/edit') {
+        router.back();
+      } else {
+        router.push('/');
+      }
     }
   };
 
