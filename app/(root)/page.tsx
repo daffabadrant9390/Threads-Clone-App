@@ -1,8 +1,9 @@
-import { fetchThreads } from '@/lib/actions/thread.actions';
+import ThreadCard from '@/components/card/ThreadCard';
+import { getThreads } from '@/lib/actions/thread.actions';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 const Home = async () => {
-  const { threadsDataPerPage, isHavingNextPage } = await fetchThreads({
+  const { threadsDataPerPage, isHavingNextPage } = await getThreads({
     pageNumber: 1,
     pageSize: 30,
   });
@@ -14,30 +15,37 @@ const Home = async () => {
     <>
       <h1 className="head-text text-left">Home</h1>
 
-      <section className="mt-9 flex flex-col gap-10">
-        {!(threadsDataPerPage || []).length ? (
-          <p className="no-result">No threads found</p>
-        ) : (
+      <section className="flex flex-col mt-9 gap-10">
+        {!!(threadsDataPerPage || []).length ? (
           <>
             {threadsDataPerPage.map((threadData) => {
               const {
-                _id,
-                parentId,
-                text,
+                _id: threadId,
+                parentThreadId,
+                text: threadContentText,
                 author,
                 community,
                 createdAt,
-                children,
+                childrenThreads,
               } = threadData || {};
 
               return (
-                <div className="flex flex-col gap-4 bg-dark-4 p-4 rounded-md">
-                  <p className="text-light-2">{author.name || ''}</p>
-                  <p className="text-light-2">{text || ''}</p>
-                </div>
+                <ThreadCard
+                  key={threadId}
+                  currentUserId={userSessionData.id || ''}
+                  id={threadId}
+                  parentId={parentThreadId}
+                  content={threadContentText || ''}
+                  author={author}
+                  community={community}
+                  createdAt={createdAt}
+                  comments={childrenThreads}
+                />
               );
             })}
           </>
+        ) : (
+          <p className="no-result">No threads found.</p>
         )}
       </section>
     </>

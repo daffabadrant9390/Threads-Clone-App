@@ -12,7 +12,7 @@ type CreateThreadParams = {
   path: string;
 };
 
-type FetchThreadsParams = {
+type GetThreadsParams = {
   pageNumber: number;
   pageSize: number;
 };
@@ -48,10 +48,10 @@ export const createThread = async ({
   }
 };
 
-export const fetchThreads = async ({
+export const getThreads = async ({
   pageNumber = 1,
   pageSize = 20,
-}: FetchThreadsParams) => {
+}: GetThreadsParams) => {
   try {
     connectToDB();
 
@@ -100,5 +100,43 @@ export const fetchThreads = async ({
     };
   } catch (error: any) {
     throw new Error(`Error fetch threads data: ${error.message}`);
+  }
+};
+
+export const getThreadById = async (threadId: string) => {
+  connectToDB();
+
+  try {
+    //TODO: Populate Community
+    const threadData = await Thread.findById(threadId)
+      .populate({
+        path: 'author',
+        model: User,
+        select: '_id id name image',
+      })
+      .populate({
+        path: 'childrenThreads',
+        populate: [
+          {
+            path: 'author',
+            model: User,
+            select: '_id id name parentThreadId image',
+          },
+          {
+            path: 'childrenThreads',
+            model: Thread,
+            populate: {
+              path: 'author',
+              model: User,
+              select: '_id id name parentThreadId image',
+            },
+          },
+        ],
+      })
+      .exec();
+
+    return threadData;
+  } catch (error: any) {
+    throw new Error(`Error fetch single thread by id: ${error.message}`);
   }
 };
