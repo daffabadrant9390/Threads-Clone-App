@@ -29,19 +29,22 @@ const Home = async () => {
                 childrenThreads,
               } = threadData || {};
 
-              return (
-                <ThreadCard
-                  key={threadId}
-                  currentUserId={userSessionData.id || ''}
-                  id={threadId}
-                  parentId={parentThreadId}
-                  content={threadContentText || ''}
-                  author={author}
-                  community={community}
-                  createdAt={createdAt}
-                  comments={childrenThreads}
-                />
-              );
+              // Only show the parent thread, no need to show the comments in the home page
+              if (!parentThreadId) {
+                return (
+                  <ThreadCard
+                    key={threadId}
+                    currentUserId={userSessionData.id || ''}
+                    id={threadId}
+                    parentId={parentThreadId}
+                    content={threadContentText || ''}
+                    author={author}
+                    community={community}
+                    createdAt={createdAt}
+                    comments={childrenThreads}
+                  />
+                );
+              }
             })}
           </>
         ) : (

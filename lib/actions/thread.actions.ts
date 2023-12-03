@@ -5,6 +5,7 @@ import { connectToDB } from '../mongoose';
 import Thread from '../models/thread.model';
 import User from '../models/user.model';
 
+// Threads
 type CreateThreadParams = {
   text: string;
   author: string;
@@ -138,5 +139,43 @@ export const getThreadById = async (threadId: string) => {
     return threadData;
   } catch (error: any) {
     throw new Error(`Error fetch single thread by id: ${error.message}`);
+  }
+};
+
+// Comments
+type CreateCommentThreadParams = {
+  parentThreadId: string;
+  commentText: string;
+  userId: string;
+  pathname: string;
+};
+
+export const createCommentThread = async (
+  params: CreateCommentThreadParams
+) => {
+  connectToDB();
+
+  try {
+    const { parentThreadId, commentText, userId, pathname } = params || {};
+
+    // Get the original thread (parent thread) using parentThreadId
+    const originalParentThread = await Thread.findById(parentThreadId);
+    if (!originalParentThread) throw new Error('Thread not found!!!');
+
+    // Create new Thread data with the comment data and save it to mongo database
+    const commentThread = new Thread({
+      text: commentText,
+      author: userId,
+      parentThreadId: parentThreadId,
+    });
+    const savedCommentThread = await commentThread.save();
+
+    // Update the childrenThreads inside originalParentThread using the new comment thread _id
+    originalParentThread.childrenThreads.push(savedCommentThread._id);
+    await originalParentThread.save();
+
+    revalidatePath(pathname);
+  } catch (error: any) {
+    throw new Error(`Error create comment thread: ${error.message}`);
   }
 };

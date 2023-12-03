@@ -1,4 +1,5 @@
 import ThreadCard from '@/components/card/ThreadCard';
+import CommentForm from '@/components/forms/Comment';
 import { getThreadById } from '@/lib/actions/thread.actions';
 import { getUserData } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs';
@@ -25,6 +26,7 @@ const ThreadDetails = async ({ params }: ThreadDetailsProps) => {
   const threadData = await getThreadById(threadId);
   const {
     _id: threadDataDBId,
+    id: threadDataId,
     parentThreadId,
     text: threadDataContentText,
     author: threadDataAuthor,
@@ -45,8 +47,50 @@ const ThreadDetails = async ({ params }: ThreadDetailsProps) => {
         parentId={parentThreadId}
         currentUserId={sessionUser?.id || ''}
         comments={childrenThreads || []}
-        isCommented={false} //TODO: Will be replaced with dynamic value
+        isComment={false}
       />
+
+      <div className="mt-7">
+        <CommentForm
+          parentThreadId={threadDataId}
+          currentUserImage={userInfo?.image || ''}
+          currentUserId={(userInfo?._id || '').toString()}
+        />
+      </div>
+
+      {!!(childrenThreads || []).length && (
+        <div className="mt-10">
+          <>
+            {childrenThreads.map((childrenThread: any) => {
+              const {
+                _id: threadDataDBId,
+                id: threadDataId,
+                parentThreadId,
+                text: threadDataContentText,
+                author: threadDataAuthor,
+                community: threadDataCommunity,
+                childrenThreads,
+                createdAt,
+              } = childrenThread || {};
+
+              return (
+                <ThreadCard
+                  key={threadDataDBId || ''}
+                  id={threadDataDBId || ''}
+                  author={threadDataAuthor || {}}
+                  community={threadDataCommunity}
+                  content={threadDataContentText || ''}
+                  createdAt={createdAt}
+                  parentId={parentThreadId}
+                  currentUserId={sessionUser?.id || ''}
+                  comments={childrenThreads || []}
+                  isComment={true}
+                />
+              );
+            })}
+          </>
+        </div>
+      )}
     </section>
   );
 };
