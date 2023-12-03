@@ -54,6 +54,7 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
   });
 
   const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+    console.log('values: ', values);
     const blob = values.profile_photo;
 
     // Check whether the image already changed or not
@@ -67,21 +68,21 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
         // Update the value of profile_photo with the new url from imgRes
         values.profile_photo = firstImgResFileUrl;
       }
+    }
 
-      await updateUserData({
-        userId: userData.id,
-        name: values.name,
-        username: values.username,
-        bio: values.bio,
-        image: values.profile_photo,
-        urlPath: pathName,
-      });
+    await updateUserData({
+      userId: userData.id,
+      name: values.name,
+      username: values.username,
+      bio: values.bio,
+      image: values.profile_photo,
+      urlPath: pathName,
+    });
 
-      if (pathName === 'profile/edit') {
-        router.back();
-      } else {
-        router.push('/');
-      }
+    if (pathName === 'profile/edit') {
+      router.back();
+    } else {
+      router.push('/');
     }
   };
 

@@ -1,16 +1,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+export type CommonAuthorItem = {
+  id: string;
+  name: string;
+  image: string;
+};
+
 type ThreadCardProps = {
   id: string;
   currentUserId: string;
   parentId: string | null;
   content: string;
-  author: {
-    id: string;
-    name: string;
-    image: string;
-  };
+  author: CommonAuthorItem;
   community: {
     id: string;
     name: string;
@@ -18,11 +20,7 @@ type ThreadCardProps = {
   } | null;
   createdAt: string;
   comments: {
-    author: {
-      id: string;
-      name: string;
-      image: string;
-    };
+    author: CommonAuthorItem;
   }[];
   isComment?: boolean;
 };
