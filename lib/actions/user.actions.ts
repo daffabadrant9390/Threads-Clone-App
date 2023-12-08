@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import User from '../models/user.model';
 import { connectToDB } from '../mongoose';
 import Thread from '../models/thread.model';
+import { FilterQuery, SortOrder } from 'mongoose';
 
 type UpdateUserDataParams = {
   userId: string;
@@ -89,5 +90,75 @@ export const getThreadsByUserId = async (userId: string) => {
     return threadData;
   } catch (error: any) {
     throw new Error(`Error fetch thread data: ${error.message}`);
+  }
+};
+
+type GetUsersDataByQueryParams = {
+  userId: string;
+  searchString: string;
+  pageNumber: number;
+  pageSize: number;
+  sortBy?: SortOrder;
+};
+
+export const getUsersDataByQuery = async ({
+  userId,
+  searchString = '',
+  pageNumber = 1,
+  pageSize = 20,
+  sortBy = 'desc',
+}: GetUsersDataByQueryParams) => {
+  try {
+    connectToDB();
+
+    const skipUsersAmount = (pageNumber - 1) * pageSize;
+
+    // Convert all the characters to be lowercase
+    const regexSearchString = new RegExp(searchString, 'i');
+
+    /*
+      $ne in mongodb means "not-equal"
+      - Search all the users inside User collection, except the user with the id same as userId
+      - So that the current user which login cant search him/herself on the search
+    */
+    const query: FilterQuery<typeof User> = {
+      id: { $ne: userId },
+    };
+
+    /*
+      - As long as the searchString is not null or empty string, match the searchString with 
+        user's username or name from the collection 
+    */
+    if ((searchString || '').trim() !== '') {
+      query.$or = [
+        { username: { $regex: regexSearchString } },
+        { name: { $regex: regexSearchString } },
+      ];
+    }
+
+    const sortingOptions = { createdAt: sortBy };
+
+    // Start the query from the real collection User
+    const usersDataQuery = User.find(query)
+      .sort(sortingOptions)
+      .skip(skipUsersAmount)
+      .limit(pageSize);
+
+    // Get the length of User collection
+    const totalUsersCollectionCount = await User.countDocuments(query);
+
+    // Execute the query
+    const usersData = await usersDataQuery.exec();
+
+    const isNextPageAvailable =
+      (totalUsersCollectionCount || 0) >
+      skipUsersAmount + (usersData || []).length;
+
+    return {
+      users: usersData,
+      isNextPageAvailable,
+    };
+  } catch (error: any) {
+    throw new Error(`Failed fetch the users data by query: ${error.message}`);
   }
 };
