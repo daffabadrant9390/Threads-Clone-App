@@ -54,7 +54,6 @@ const AccountProfile = ({ userData, btnTitle }: AccountProfileProps) => {
   });
 
   const onSubmit = async (values: z.infer<typeof UserValidation>) => {
-    console.log('values: ', values);
     const blob = values.profile_photo;
 
     // Check whether the image already changed or not

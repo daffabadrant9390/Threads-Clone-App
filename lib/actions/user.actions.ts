@@ -162,3 +162,42 @@ export const getUsersDataByQuery = async ({
     throw new Error(`Failed fetch the users data by query: ${error.message}`);
   }
 };
+
+export const getUserActivities = async ({ userId }: { userId: string }) => {
+  try {
+    connectToDB();
+
+    // Get all the threads from the current user which login
+    const userThreads = await Thread.find({ author: userId });
+
+    // From all the user's threads, collect all the childrenThreads (replies) from each of their thread
+    const userChildrenThreads = (userThreads || []).reduce(
+      (acc, currentUserThread) => {
+        const { childrenThreads } = currentUserThread || {};
+        console.log('current acc condition: ', acc);
+
+        // Concat all the childrenThreads from each userThread into 1 array
+        return acc.concat(childrenThreads);
+      },
+      []
+    );
+
+    /* 
+      Get all the threads data from Thread collection which match:
+        - the _id should be match with userChildrenThreads
+        - the author should be not equal to userId, because we dont want to get the replies from the login user
+    */
+    const threadRepliesFromOtherUsers = await Thread.find({
+      _id: { $in: userChildrenThreads },
+      author: { $ne: userId },
+    }).populate({
+      path: 'author',
+      model: User,
+      select: '_id name image',
+    });
+
+    return threadRepliesFromOtherUsers;
+  } catch (error: any) {
+    throw new Error(`Failed to fetch the thread replies: ${error.message}`);
+  }
+};

@@ -19,7 +19,17 @@ const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${inter.className} bg-dark-1`}>{children}</body>
+        <body className={`${inter.className} bg-dark-1`}>
+          <section className="w-full min-h-screen flex flex-col justify-center items-center gap-8">
+            <h1 className="head-text text-light-1">
+              Welcome to Thread Clone App
+            </h1>
+            {children}
+            <p className="!text-small-regular text-gray-1">
+              Created and Licensed by M. Daffa Badran Thoriq | 2023
+            </p>
+          </section>
+        </body>
       </html>
     </ClerkProvider>
   );
