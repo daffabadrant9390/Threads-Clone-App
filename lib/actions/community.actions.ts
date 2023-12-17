@@ -87,6 +87,11 @@ export const getCommunityThreadsAndPostsById = async (communityId: string) => {
             select: 'name image id _id',
           },
           {
+            path: 'community',
+            model: Community,
+            select: '_id id name image',
+          },
+          {
             path: 'childrenThreads',
             model: Thread,
             populate: {

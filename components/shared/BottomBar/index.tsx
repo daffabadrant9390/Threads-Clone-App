@@ -4,20 +4,27 @@ import { sidebarLinks } from '@/constants';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@clerk/nextjs';
 
 const BottomBar = () => {
   const pathName = usePathname();
+  const { userId } = useAuth();
 
   return (
     <section className="bottombar">
       <div className="bottombar_container">
         {(sidebarLinks || []).map((sidebarLink) => {
-          const { imgURL, label, route } = sidebarLink || {};
+          let { imgURL, label, route } = sidebarLink || {};
 
           // Check isActive Navigation Link
           const isActiveLink =
             (pathName.includes(route || '') && (route || '').length > 1) ||
             pathName === (route || '');
+
+          // Modify the route and add user id on the url
+          if (route === '/profile') {
+            route = `/profile/${userId}`;
+          }
 
           return (
             <Link

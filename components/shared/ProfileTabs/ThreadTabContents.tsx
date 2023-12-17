@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 type ThreadTabContentsProps = {
   sessionUserId: string;
   accountTypeId: string;
-  accountType: 'user' | 'community'; // TODO: Will add another enum later on
+  accountType: 'user' | 'community';
 };
 
 const ThreadTabContents = async ({
