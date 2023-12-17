@@ -9,6 +9,7 @@ type ProfileHeaderProps = {
   usernameProfile: string;
   imgUrlProfile: string;
   bioProfile: string;
+  type?: 'User' | 'Community'
 };
 
 const ProfileHeader = ({
@@ -18,6 +19,7 @@ const ProfileHeader = ({
   usernameProfile,
   imgUrlProfile,
   bioProfile,
+  type
 }: ProfileHeaderProps) => {
   return (
     <div className="flex w-full flex-col justify-start">

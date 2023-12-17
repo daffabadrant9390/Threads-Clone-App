@@ -39,7 +39,7 @@ const SearchUserCard = ({
 
         <div className="flex-1 text-ellipsis flex flex-col gap-1">
           <h4 className="text-base-semibold text-light-1">{name}</h4>
-          <p className="text-small-medium text-gray-1">${username}</p>
+          <p className="text-small-medium text-gray-1">@{username}</p>
         </div>
       </div>
 

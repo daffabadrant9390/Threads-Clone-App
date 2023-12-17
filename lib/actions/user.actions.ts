@@ -1,9 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import User from '../models/user.model';
 import { connectToDB } from '../mongoose';
+import User from '../models/user.model';
 import Thread from '../models/thread.model';
+import Community from '../models/community.model';
 import { FilterQuery, SortOrder } from 'mongoose';
 
 type UpdateUserDataParams = {
@@ -16,17 +17,18 @@ type UpdateUserDataParams = {
 };
 
 export const getUserData = async (userId: string) => {
-  connectToDB();
-
   try {
-    const userData = await User.findOne({
-      id: userId || '',
+    connectToDB();
+
+    const userData = await User.findOne({ id: userId || '' }).populate({
+      path: 'communities',
+      model: Community,
     });
 
     if (!!userData) {
       return userData;
     } else {
-      return console.log('User with ID not found on the database!');
+      throw new Error('User with ID not found on the database!');
     }
   } catch (error: any) {
     throw new Error(`Failed to get the user data: ${error.message}`);
@@ -69,6 +71,11 @@ export const getThreadsByUserId = async (userId: string) => {
         {
           path: 'author',
           model: User,
+        },
+        {
+          path: 'community',
+          model: Community,
+          select: '_id id name image',
         },
         {
           path: 'childrenThreads',

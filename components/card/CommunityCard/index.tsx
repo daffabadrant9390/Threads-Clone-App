@@ -1,0 +1,87 @@
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import Link from 'next/link';
+
+type CommunityCardProps = {
+  id: string;
+  name: string;
+  username: string;
+  imgUrl: string;
+  bio: string;
+  members: {
+    image: string;
+  }[];
+};
+
+const CommunityCard = ({
+  id,
+  name,
+  username,
+  imgUrl,
+  bio,
+  members,
+}: CommunityCardProps) => {
+  return (
+    <article className="community-card w-full">
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          href={`/communities/${id}`}
+          className="relative h-12 w-12 flex-shrink-0"
+        >
+          <Image
+            src={imgUrl || '/'}
+            alt="community-logo"
+            fill
+            className="rounded-full object-cover"
+          />
+        </Link>
+
+        <div>
+          <Link href={`communities/${id}`}>
+            <h4 className="text-base-semibold text-light-1">{name || ''}</h4>
+          </Link>
+          <p className="text-small-medium text-gray-1">@{username || ''}</p>
+        </div>
+      </div>
+
+      <p className="mt-4 text-subtle-medium text-gray-1">{bio}</p>
+
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <Link href={`/communities/${id}`}>
+          <Button size="sm" className="community-card_btn">
+            View
+          </Button>
+        </Link>
+
+        {(members || []).length > 0 && (
+          <div className="flex items-center">
+            {members.slice(0, 5).map((member, idx) => {
+              return (
+                <div
+                  key={`member-img-${idx}`}
+                  className="relative w-7 h-7 flex-shrink-0"
+                >
+                  <Image
+                    src={member.image || '/'}
+                    alt={`user_${idx}`}
+                    fill
+                    className={`${
+                      idx !== 0 && '-ml-2'
+                    } rounded-full object-cover`}
+                  />
+                </div>
+              );
+            })}
+            {members.length > 3 && (
+              <p className="ml-2 text-subtle-medium text-gray-1">
+                {members.length}+ Users
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+};
+
+export default CommunityCard;

@@ -1,21 +1,34 @@
 import ThreadCard, { CommonAuthorItem } from '@/components/card/ThreadCard';
+import { getCommunityThreadsAndPostsById } from '@/lib/actions/community.actions';
 import { getThreadsByUserId } from '@/lib/actions/user.actions';
+import { redirect } from 'next/navigation';
 
 type ThreadTabContentsProps = {
   sessionUserId: string;
-  profileUserId: string;
-  accountType: 'user'; // TODO: Will add another enum later on
+  accountTypeId: string;
+  accountType: 'user' | 'community'; // TODO: Will add another enum later on
 };
 
 const ThreadTabContents = async ({
   sessionUserId,
-  profileUserId,
+  accountTypeId,
   accountType,
 }: ThreadTabContentsProps) => {
-  const userProfileData = await getThreadsByUserId(profileUserId || '');
-  if (!userProfileData) return null;
+  let threadDataResults: any;
 
-  const { threads: profileThreadsData } = userProfileData;
+  if (accountType === 'user') {
+    threadDataResults = await getThreadsByUserId(accountTypeId || '');
+  } else {
+    threadDataResults = await getCommunityThreadsAndPostsById(
+      accountTypeId || ''
+    );
+  }
+
+  if (!threadDataResults) {
+    redirect('/');
+  }
+
+  const { threads: profileThreadsData } = threadDataResults;
 
   return (
     <section className="mt-9 flex flex-col gap-10">
@@ -35,9 +48,9 @@ const ThreadTabContents = async ({
         const finalAuthorData: CommonAuthorItem =
           accountType === 'user'
             ? {
-                id: userProfileData?.id || '',
-                name: userProfileData?.name || '',
-                image: userProfileData?.image || '',
+                id: threadDataResults?.id || '',
+                name: threadDataResults?.name || '',
+                image: threadDataResults?.image || '',
               }
             : {
                 id: author?.id || '',

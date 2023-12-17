@@ -98,7 +98,7 @@ const ProfilePage = async ({ params }: ProfilePageProps) => {
               >
                 <ThreadTabContents
                   sessionUserId={sessionUser?.id || ''}
-                  profileUserId={userInfo?.id || ''}
+                  accountTypeId={userInfo?.id || ''}
                   accountType="user"
                 />
               </TabsContent>

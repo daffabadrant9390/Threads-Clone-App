@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { connectToDB } from '../mongoose';
 import Thread from '../models/thread.model';
 import User from '../models/user.model';
+import Community from '../models/community.model';
 
 // Threads
 type CreateThreadParams = {
@@ -27,11 +28,17 @@ export const createThread = async ({
   try {
     connectToDB();
 
+    // Check if we found the community object from communityId
+    const communityObject = await Community.findOne(
+      { id: communityId },
+      { _id: 1 }
+    );
+
     // Insert new data at Thread collection
     const createdThread = await Thread.create({
       text,
       author,
-      community: null,
+      community: communityObject || null, // Assign communityId if provided, or leave it null for personal account
     });
 
     if (!!createdThread) {
@@ -39,11 +46,18 @@ export const createThread = async ({
       await User.findByIdAndUpdate(author, {
         $push: { threads: createdThread._id },
       });
-    } else {
-      console.error('Failed to create new thread');
-    }
 
-    revalidatePath(path);
+      // Also update the community by pushing the new thread to threads array
+      if (!!communityObject) {
+        await Community.findByIdAndUpdate(communityObject, {
+          $push: { threads: createdThread._id },
+        });
+      }
+
+      revalidatePath(path);
+    } else {
+      throw new Error('Failed to create new thread');
+    }
   } catch (error: any) {
     throw new Error(`Failed to create new thread: ${error.message}`);
   }
@@ -73,6 +87,10 @@ export const getThreads = async ({
       .skip(skipAmountThreads)
       .limit(pageSize)
       .populate({ path: 'author', model: User })
+      .populate({
+        path: 'community',
+        model: Community,
+      })
       .populate({
         path: 'childrenThreads',
         populate: {
@@ -105,16 +123,20 @@ export const getThreads = async ({
 };
 
 export const getThreadById = async (threadId: string) => {
-  connectToDB();
-
   try {
-    //TODO: Populate Community
+    connectToDB();
+
     const threadData = await Thread.findById(threadId)
       .populate({
         path: 'author',
         model: User,
         select: '_id id name image',
-      })
+      }) // Populate the author field with _id and username
+      .populate({
+        path: 'community',
+        model: Community,
+        select: '_id id name image',
+      }) // Populate the community field with _id and name
       .populate({
         path: 'childrenThreads',
         populate: [
@@ -153,14 +175,14 @@ type CreateCommentThreadParams = {
 export const createCommentThread = async (
   params: CreateCommentThreadParams
 ) => {
-  connectToDB();
-
   try {
+    connectToDB();
+
     const { parentThreadId, commentText, userId, pathname } = params || {};
 
     // Get the original thread (parent thread) using parentThreadId
     const originalParentThread = await Thread.findById(parentThreadId);
-    if (!originalParentThread) throw new Error('Thread not found!!!');
+    if (!originalParentThread) throw new Error('Thread not found!');
 
     // Create new Thread data with the comment data and save it to mongo database
     const commentThread = new Thread({

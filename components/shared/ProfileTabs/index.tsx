@@ -8,13 +8,13 @@ import ThreadTabContents from './ThreadTabContents';
 type ProfileTabsProps = {
   totalThreadsAmount: number;
   sessionUserId: string;
-  profileUserId: string;
+  accountTypeId: string;
 };
 
 const ProfileTabs = ({
   totalThreadsAmount,
   sessionUserId,
-  profileUserId,
+  accountTypeId,
 }: ProfileTabsProps) => {
   return (
     <Tabs defaultValue="threads" className="w-full">
@@ -68,7 +68,7 @@ const ProfileTabs = ({
           >
             <ThreadTabContents
               sessionUserId={sessionUserId}
-              profileUserId={profileUserId}
+              accountTypeId={accountTypeId}
               accountType="user"
             />
           </TabsContent>

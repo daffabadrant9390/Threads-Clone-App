@@ -72,7 +72,7 @@ export const getCommunityDetailsById = async (communityId: string) => {
   }
 };
 
-export const getCommunityThreadsAndPosts = async (communityId: string) => {
+export const getCommunityThreadsAndPostsById = async (communityId: string) => {
   try {
     connectToDB();
 

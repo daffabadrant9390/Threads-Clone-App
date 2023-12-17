@@ -1,4 +1,4 @@
-import SearchUserCard from '@/components/shared/SearchUserCard';
+import SearchUserCard from '@/components/card/SearchUserCard';
 import { getUserData, getUsersDataByQuery } from '@/lib/actions/user.actions';
 import { currentUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';

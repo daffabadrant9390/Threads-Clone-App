@@ -1,3 +1,4 @@
+import { formatDateString } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -109,14 +110,38 @@ const ThreadCard = ({
                 (!!(comments || []).length && (
                   <Link href={`/thread/${id}`}>
                     <p className="mt-1 text-subtle-medium text-gray-1">
-                      {comments.length} replies
+                      {comments.length} repl{comments.length > 1 ? 'ies' : 'y'}
                     </p>
                   </Link>
                 ))}
             </div>
           </div>
         </div>
+
+        {/* TODO: Delete Thread */}
       </div>
+      {/* TODO: Comments image and replies text */}
+
+      {!isComment && !!community && (
+        <Link
+          href={`/communities/${community.id}`}
+          className="mt-5 flex items-center"
+        >
+          <p className="text-subtle-medium text-gray-1 hover:text-light-2 transition duration-300 ease-in-out">
+            {`${formatDateString(createdAt)} - ${
+              community.name || ''
+            } Community`}
+          </p>
+          <div className="ml-2 relative w-5 h-5 flex-shrink-0">
+            <Image
+              src={community.image || '/'}
+              alt={community.name}
+              fill
+              className="object-cover rounded-full"
+            />
+          </div>
+        </Link>
+      )}
     </article>
   );
 };
